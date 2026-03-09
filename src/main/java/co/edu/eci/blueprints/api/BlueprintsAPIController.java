@@ -26,6 +26,7 @@ import co.edu.eci.blueprints.api.ApiResponse;
  */
 @RestController
 @RequestMapping("/api/v1/blueprints")
+@CrossOrigin(origins = "http://localhost:5173")
 public class BlueprintsAPIController {
 
     /**
