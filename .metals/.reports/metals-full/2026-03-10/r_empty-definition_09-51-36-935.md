@@ -1,3 +1,14 @@
+error id: file:///D:/ander/Documents/SEMESTRE%207/ARSW/LAB06%20-%20P3%20BLUEPRINTS/Backend_BluePrints_Java21_API_Security_JWT/src/main/java/co/edu/eci/blueprints/api/BlueprintController.java:_empty_/ResponseEntity#
+file:///D:/ander/Documents/SEMESTRE%207/ARSW/LAB06%20-%20P3%20BLUEPRINTS/Backend_BluePrints_Java21_API_Security_JWT/src/main/java/co/edu/eci/blueprints/api/BlueprintController.java
+empty definition using pc, found symbol in pc: _empty_/ResponseEntity#
+empty definition using semanticdb
+empty definition using fallback
+non-local guesses:
+
+offset: 2026
+uri: file:///D:/ander/Documents/SEMESTRE%207/ARSW/LAB06%20-%20P3%20BLUEPRINTS/Backend_BluePrints_Java21_API_Security_JWT/src/main/java/co/edu/eci/blueprints/api/BlueprintController.java
+text:
+```scala
 package co.edu.eci.blueprints.api;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,7 +49,7 @@ public class BlueprintController {
             Map.of("id", "b1", "name", "Casa de campo"),
             Map.of("id", "b2", "name", "Edificio urbano")
         );
-        return ResponseEntity.ok(new ApiResponse<>(200, "Success", data));
+        return ResponseEntit@@y.ok(new ApiResponse<>(200, "Success", data));
     }
 
     /**
@@ -76,3 +87,10 @@ public class BlueprintController {
             .body(new ApiResponse<>(201, "Created", created));
     }
 }
+
+```
+
+
+#### Short summary: 
+
+empty definition using pc, found symbol in pc: _empty_/ResponseEntity#

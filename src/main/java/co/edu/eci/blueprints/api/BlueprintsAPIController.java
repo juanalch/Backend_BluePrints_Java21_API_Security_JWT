@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.Set;
-import co.edu.eci.blueprints.api.ApiResponse;
 
 /**
  * REST controller for managing blueprint resources.
