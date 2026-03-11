@@ -21,6 +21,14 @@ public class PostgresBlueprintPersistence implements BlueprintPersistence {
     @Autowired
     private EntityManager entityManager;
 
+    private boolean existsBlueprint(String author, String name) {
+        TypedQuery<Long> query = entityManager.createQuery(
+            "SELECT COUNT(b) FROM Blueprint b WHERE b.author = :author AND b.name = :name", Long.class);
+        query.setParameter("author", author);
+        query.setParameter("name", name);
+        return query.getSingleResult() > 0;
+    }
+
     @Override
     public void saveBlueprint(Blueprint bp) throws BlueprintPersistenceException {
         try {
@@ -67,5 +75,29 @@ public class PostgresBlueprintPersistence implements BlueprintPersistence {
         Blueprint bp = getBlueprint(author, name);
         bp.addPoint(new co.edu.eci.blueprints.model.Point(x, y));
         entityManager.merge(bp);
+    }
+
+    @Override
+    public Blueprint updateBlueprint(String author, String name, Blueprint blueprint)
+            throws BlueprintNotFoundException, BlueprintPersistenceException {
+        Blueprint existing = getBlueprint(author, name);
+        boolean changingKey = !existing.getAuthor().equals(blueprint.getAuthor())
+                || !existing.getName().equals(blueprint.getName());
+
+        if (changingKey && existsBlueprint(blueprint.getAuthor(), blueprint.getName())) {
+            throw new BlueprintPersistenceException(
+                "Blueprint already exists: " + blueprint.getAuthor() + ":" + blueprint.getName());
+        }
+
+        existing.setAuthor(blueprint.getAuthor());
+        existing.setName(blueprint.getName());
+        existing.replacePoints(blueprint.getPoints());
+        return entityManager.merge(existing);
+    }
+
+    @Override
+    public void deleteBlueprint(String author, String name) throws BlueprintNotFoundException {
+        Blueprint existing = getBlueprint(author, name);
+        entityManager.remove(entityManager.contains(existing) ? existing : entityManager.merge(existing));
     }
 }
