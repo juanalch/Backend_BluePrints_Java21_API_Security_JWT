@@ -92,4 +92,30 @@ public class BlueprintsServices {
     public void addPoint(String author, String name, int x, int y) throws BlueprintNotFoundException {
         persistence.addPoint(author, name, x, y);
     }
+
+    /**
+     * Updates an existing blueprint.
+     * @param author Current author identifier
+     * @param name Current blueprint identifier
+     * @param blueprint Updated blueprint data
+     * @return The updated blueprint
+     * @throws BlueprintNotFoundException if the blueprint does not exist
+     * @throws BlueprintPersistenceException if the update would create a duplicate blueprint
+     */
+    @Transactional
+    public Blueprint updateBlueprint(String author, String name, Blueprint blueprint)
+            throws BlueprintNotFoundException, BlueprintPersistenceException {
+        return persistence.updateBlueprint(author, name, blueprint);
+    }
+
+    /**
+     * Deletes an existing blueprint.
+     * @param author The blueprint author
+     * @param name The blueprint name
+     * @throws BlueprintNotFoundException if the blueprint does not exist
+     */
+    @Transactional
+    public void deleteBlueprint(String author, String name) throws BlueprintNotFoundException {
+        persistence.deleteBlueprint(author, name);
+    }
 }
