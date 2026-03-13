@@ -71,10 +71,22 @@ public class Blueprint {
     public String getAuthor() { return author; }
 
     /**
+     * Updates the author of the blueprint.
+     * @param author New author name
+     */
+    public void setAuthor(String author) { this.author = author; }
+
+    /**
      * Gets the name of the blueprint.
      * @return Blueprint name
      */
     public String getName() { return name; }
+
+    /**
+     * Updates the blueprint's name.
+     * @param name New blueprint name
+     */
+    public void setName(String name) { this.name = name; }
 
     /**
      * Gets the list of points that make up the blueprint.
@@ -87,6 +99,17 @@ public class Blueprint {
      * @param p Point to add
      */
     public void addPoint(Point p) { points.add(p); }
+
+    /**
+     * Replaces the current points with a new list.
+     * @param updatedPoints New points to assign
+     */
+    public void replacePoints(List<Point> updatedPoints) {
+        points.clear();
+        if (updatedPoints != null) {
+            points.addAll(updatedPoints);
+        }
+    }
 
     /**
      * Compares this blueprint with another object to determine if they are equal.

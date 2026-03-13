@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.Set;
-import co.edu.eci.blueprints.api.ApiResponse;
 
 /**
  * REST controller for managing blueprint resources.
@@ -26,6 +25,7 @@ import co.edu.eci.blueprints.api.ApiResponse;
  */
 @RestController
 @RequestMapping("/api/v1/blueprints")
+@CrossOrigin(origins = "http://localhost:5173")
 public class BlueprintsAPIController {
 
     /**
@@ -221,10 +221,112 @@ public class BlueprintsAPIController {
     }
 
     /**
+     * Updates a blueprint and optionally allows changing its author, name, and points.
+     * @param author Current blueprint author
+     * @param bpname Current blueprint name
+     * @param req Updated blueprint data
+     * @return HTTP 200 with the updated blueprint, or an error status if the update fails
+     */
+    @Operation(summary = "Actualizar un blueprint existente")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Blueprint actualizado exitosamente"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Solicitud inválida o datos incorrectos",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = "{\"code\":400,\"message\":\"Solicitud inválida o datos incorrectos\",\"data\":null}"
+                )
+            )
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Blueprint no encontrado",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = "{\"code\":404,\"message\":\"Blueprint no encontrado\",\"data\":null}"
+                )
+            )
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "409",
+            description = "El blueprint ya existe",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = "{\"code\":409,\"message\":\"El blueprint ya existe\",\"data\":null}"
+                )
+            )
+        )
+    })
+    @PreAuthorize("hasAuthority('SCOPE_blueprints.write')")
+    @PutMapping("/{author}/{bpname}")
+    public ResponseEntity<ApiResponse<BlueprintDTO>> update(@PathVariable String author, @PathVariable String bpname,
+                                                            @Valid @RequestBody UpdateBlueprintRequest req) {
+        if (req.points() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(400, "Solicitud inválida o datos incorrectos", null));
+        }
+
+        try {
+            java.util.List<Point> points = req.points().stream().map(BlueprintMapper::toEntity).toList();
+            Blueprint updatedBlueprint = new Blueprint(req.author(), req.name(), points);
+            Blueprint updated = services.updateBlueprint(author, bpname, updatedBlueprint);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Success", BlueprintMapper.toDTO(updated)));
+        } catch (BlueprintNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(404, e.getMessage(), null));
+        } catch (BlueprintPersistenceException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiResponse<>(409, e.getMessage(), null));
+        }
+    }
+
+    /**
+     * Deletes a blueprint by author and name.
+     * @param author The blueprint author
+     * @param bpname The blueprint name
+     * @return HTTP 200 if deleted, or 404 if not found
+     */
+    @Operation(summary = "Eliminar un blueprint existente")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Blueprint eliminado exitosamente"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Blueprint no encontrado",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = "{\"code\":404,\"message\":\"Blueprint no encontrado\",\"data\":null}"
+                )
+            )
+        )
+    })
+    @PreAuthorize("hasAuthority('SCOPE_blueprints.write')")
+    @DeleteMapping("/{author}/{bpname}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String author, @PathVariable String bpname) {
+        try {
+            services.deleteBlueprint(author, bpname);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Deleted", null));
+        } catch (BlueprintNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(404, e.getMessage(), null));
+        }
+    }
+
+    /**
      * Request body model for creating a new blueprint.
      * Encapsulates and validates the required fields: author, name, and points.
      */
         public record NewBlueprintRequest(
+            @NotBlank String author,
+            @NotBlank String name,
+            @Valid java.util.List<PointDTO> points
+        ) { }
+
+        public record UpdateBlueprintRequest(
             @NotBlank String author,
             @NotBlank String name,
             @Valid java.util.List<PointDTO> points
